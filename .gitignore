@@ -3,3 +3,5 @@
 *.pem
 .coverage
 .cache
+dist
+*.egg-info

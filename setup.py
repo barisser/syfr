@@ -6,5 +6,7 @@ setup(
       description='Always Open Always Safe',
       url='syfr.io',
       license='MIT',
-      packages=['pycrypto']
+      install_requires=[
+            'cryptography'
+        ]
       )

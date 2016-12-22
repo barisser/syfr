@@ -44,3 +44,10 @@ recipient.  Including this sender/receiver metadata in the HMAC prevents 'Surrep
 - Entity Authentication (RSA Signatures)
 - Prevent Surreptitious Forwarding (Metadata in signed HMAC)
 - Replay attacks (IV tracking)
+
+## Example Usage
+
+## Run Tests
+
+make prep
+make test
