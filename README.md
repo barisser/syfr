@@ -46,8 +46,27 @@ recipient.  Including this sender/receiver metadata in the HMAC prevents 'Surrep
 - Replay attacks (IV tracking)
 
 ## Example Usage
+~~~~
+import syfr
+
+# Create my RSA key
+my_key = syfr.generate_rsa_key()
+
+# Generate a random 3rd party public key
+recipient_rsa_pub = syfr.serialize_pubkey(syfr.generate_rsa_key().public_key())
+
+message = "Attack at Dawn"
+
+# Encrypt
+aes_ciphertext, encry_aes_key, hmac, hmac_signature, iv, metadata = syfr.encrypt(message, my_key, recipient_rsa_pub)
+
+
+# decrypt
+message = syfr.decrypt(aes_ciphertext, encry_aes_key, hmac, hmac_signature, rsa_priv, iv, metadata)
+~~~~
 
 ## Run Tests
-
+~~~~
 make prep
 make test
+~~~~

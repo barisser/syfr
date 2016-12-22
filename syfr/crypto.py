@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.padding import PKCS7
 
-def generate_rsa_priv(complexity=4096):
+def generate_rsa_key(complexity=4096):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=complexity,
@@ -132,12 +132,14 @@ def aes_decrypt(ciphertext, key, iv):
     padded = decryptor.update(base64.b64decode(ciphertext)) + decryptor.finalize()
     return unpad(padded)
 
-def encrypt(message, rsa_priv, recipient_rsa_pub):
+def encrypt(message, rsa_priv, receiver_pubkey):
     aes_key = create_aes_key()
     aes_ciphertext, iv = aes_encrypt(message, aes_key)
     hmac_key = hashlib.sha256(aes_key).hexdigest()
+
     sender_pubkey = serialize_pubkey(rsa_priv.public_key())
-    receiver_pubkey = serialize_pubkey(recipient_rsa_pub)
+    #receiver_pubkey = serialize_pubkey(recipient_rsa_pub)
+    recipient_rsa_pub = load_pubkey(receiver_pubkey)
     metadata = "sender_pubkey:{0};receiver_pubkey:{1}".format(sender_pubkey, receiver_pubkey)
 
     encry_aes_key = rsa_encrypt(aes_key, recipient_rsa_pub)
