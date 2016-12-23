@@ -1,6 +1,12 @@
 # SYFR
 Hybrid AES-RSA Encryption for Python
 
+## What is Syfr?
+Syfr is a *very* thin wrapper around the excellent Python Cryptography
+library.  It implements AES/RSA hybrid encryption with an emphasis on
+simplicity for the user.  It makes design choices for you so AES/RSA
+hybrid encryption 'just works'.
+
 ## Motivation
 There needs to be a ready-made Hybrid Symmetric-Asymmetric
 encryption solution in Python.  There are a lot of implementations
