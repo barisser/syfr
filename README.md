@@ -59,7 +59,8 @@ import syfr
 my_key = syfr.generate_rsa_key()
 
 # Generate a random 3rd party public key
-recipient_rsa_pub = syfr.serialize_pubkey(syfr.generate_rsa_key().public_key())
+other_key = syfr.generate_rsa_key()
+recipient_rsa_pub = syfr.serialize_pubkey(other_key.public_key())
 
 message = "Attack at Dawn"
 
@@ -68,7 +69,7 @@ aes_ciphertext, encry_aes_key, hmac, hmac_signature, iv, metadata = syfr.encrypt
 
 
 # decrypt
-message = syfr.decrypt(aes_ciphertext, encry_aes_key, hmac, hmac_signature, rsa_priv, iv, metadata)
+message = syfr.decrypt(aes_ciphertext, encry_aes_key, hmac, hmac_signature, other_key, iv, metadata)
 ~~~~
 
 ## Run Tests
