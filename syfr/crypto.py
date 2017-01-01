@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.padding import PKCS7
 
+bitsize_marker_length = 10
+
 def generate_rsa_key(complexity=4096):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -99,16 +101,31 @@ def create_hmac(key, message_list):
     h.update(message)
     return base64.b64encode(h.finalize())
 
-def pad(message):
-    padder = PKCS7(128).padder()
+def pad(message, blocksize=128):
+    padder = PKCS7(blocksize).padder()
     padded_data = padder.update(message)
     padded_data += padder.finalize()
     return padded_data
 
-def unpad(padded_data):
-    unpadder = PKCS7(128).unpadder()
+def long_pad(message, goal_length):
+    assert len(message) + bitsize_marker_length <= goal_length
+    c = 0
+    for _ in range(goal_length - len(message) - bitsize_marker_length):
+        message += "0"
+        c += 1
+    d = str(c).zfill(bitsize_marker_length)
+    message += d
+    return message
+
+def unpad(padded_data, blocksize=128):
+    unpadder = PKCS7(blocksize).unpadder()
     data = unpadder.update(padded_data)
     return data + unpadder.finalize()
+
+def long_unpad(message):
+    assert len(message) <= 10**bitsize_marker_length
+    padding_size = int(message[-bitsize_marker_length:])
+    return message[0:-bitsize_marker_length-padding_size]
 
 def aes_encrypt(message, key):
     iv = os.urandom(16)

@@ -1,3 +1,6 @@
+import base64
+import os
+
 import crypto
 
 def test_rsa_encrypt_and_decrypt():
@@ -36,3 +39,9 @@ def test_sign():
     message = "Secret wish list"
     sig = crypto.sign(message, priv)
     assert crypto.verify_signature(sig, message, priv.public_key())
+
+def test_long_pad():
+    complexity = 10**3 # won't create exactly this length
+    contents = base64.b64encode(os.urandom(complexity))
+    padded = crypto.long_pad(contents, 3*complexity)
+    assert crypto.long_unpad(padded) == contents
