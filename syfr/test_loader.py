@@ -3,12 +3,16 @@ import hashlib
 import math
 import os
 
+import crypto
 import loader
+
+def random_content(pseudolength):
+    return base64.b64encode(os.urandom(pseudolength))
 
 def test_divide_unite_contents():
     # random contents
     complexity = loader.DATA_BLOCK_SIZE * 100 # won't create exactly this length
-    contents = base64.b64encode(os.urandom(complexity))
+    contents = random_content(complexity)
     size = len(contents)
     subcontents = loader.divide_contents(contents)
     assert len(subcontents) == math.ceil(float(size) / float(loader.DATA_BLOCK_SIZE))
@@ -16,3 +20,12 @@ def test_divide_unite_contents():
 
     united = loader.unite_contents(subcontents)
     assert hashlib.sha256(united).hexdigest() == hashlib.sha256(contents).hexdigest()
+
+def test_encrypt_block():
+    content = crypto.long_pad(random_content(1000))
+    rsa_priv = crypto.generate_rsa_key()
+    priv2 = crypto.generate_rsa_key()
+    receiver_pubkey = crypto.serialize_pubkey(priv2.public_key())
+
+    response = loader.encrypt_block(content, rsa_priv, receiver_pubkey)
+    assert loader.full_decrypt_block(response, priv2) == content

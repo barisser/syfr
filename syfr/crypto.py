@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives import hashes, hmac
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.padding import PKCS7
 
+import loader
+
 bitsize_marker_length = 10
 
 def generate_rsa_key(complexity=4096):
@@ -107,7 +109,7 @@ def pad(message, blocksize=128):
     padded_data += padder.finalize()
     return padded_data
 
-def long_pad(message, goal_length):
+def long_pad(message, goal_length=loader.DATA_BLOCK_SIZE):
     assert len(message) + bitsize_marker_length <= goal_length
     c = 0
     for _ in range(goal_length - len(message) - bitsize_marker_length):
@@ -155,9 +157,8 @@ def encrypt(message, rsa_priv, receiver_pubkey):
     hmac_key = hashlib.sha256(aes_key).hexdigest()
 
     sender_pubkey = serialize_pubkey(rsa_priv.public_key())
-    #receiver_pubkey = serialize_pubkey(recipient_rsa_pub)
     recipient_rsa_pub = load_pubkey(receiver_pubkey)
-    metadata = "sender_pubkey:{0};receiver_pubkey:{1}".format(sender_pubkey, receiver_pubkey)
+    metadata = loader.recompose_metadata(sender_pubkey, receiver_pubkey)
 
     encry_aes_key = rsa_encrypt(aes_key, recipient_rsa_pub)
 
