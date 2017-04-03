@@ -31,10 +31,11 @@ def unite_contents(content_blocks):
     return content
 
 def compute_block_hash(block_dict):
-    b = copy.deepcopy(block_dict)
-    if 'id' in b:
-        del b['id']
-    s = str(hash(frozenset(block_dict)))
+    s = ""
+    for k in sorted(block_dict.keys()):
+        if k in ['id']:
+            continue
+        s += "&{0}:{1}".format(k, block_dict[k])
     return hashlib.sha256(s).hexdigest()
 
 def decompose_metadata(metadata):
@@ -59,7 +60,7 @@ def encrypt_block(content, rsa_priv, receiver_pubkey):
                 'sender_public_key': sender,
                 'receiver_public_key': receiver
                 }
-    response['id'] = compute_block_hash(list(response.iteritems()))
+    response['id'] = compute_block_hash(response)
     return response
 
 def full_decrypt_block(response, receiver_privkey):

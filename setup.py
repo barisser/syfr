@@ -7,5 +7,10 @@ setup(
       license='MIT',
       install_requires=[
             'cryptography'
+        ],
+      packages=['syfr'],
+      tests_require=[
+          'pytest',
+          'pytest-cov'
         ]
       )
