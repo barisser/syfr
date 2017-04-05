@@ -29,3 +29,12 @@ def test_encrypt_block():
 
     response = loader.encrypt_block(content, rsa_priv, receiver_pubkey)
     assert loader.full_decrypt_block(response, priv2) == content
+
+def test_assemble_block_tree():
+    contents = random_content(10**6)
+    rsa_priv = crypto.generate_rsa_key()
+    priv2 = crypto.generate_rsa_key()
+    receiver_pubkey = crypto.serialize_pubkey(priv2.public_key())
+    blocks = loader.assemble_block_tree(contents, rsa_priv, receiver_pubkey)
+    derived_contents = loader.tree_decrypt(blocks[-1], priv2, cached_blocks=blocks)
+    assert derived_contents == contents
