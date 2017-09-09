@@ -7,10 +7,12 @@ import crypto
 
 DATA_BLOCK_SIZE = 65536
 
+
 def encrypt_file(file_path, rsa_priv, receiver_pubkey):
     contents = open(file_path).read()
 
     return blocks
+
 
 def masters_from_children(children, rsa_priv, receiver_pubkey):
     contents = []
@@ -18,11 +20,14 @@ def masters_from_children(children, rsa_priv, receiver_pubkey):
     last_master_content = "MASTER:"
 
     for child in children:
-        if len(last_master_content) + len(child['id']) > DATA_BLOCK_SIZE - crypto.bitsize_marker_length - 32:
+        if len(last_master_content) + len(child["id"]) > (
+                DATA_BLOCK_SIZE
+                - crypto.BITSIZE_MARKER_LENGTH-32
+            ):
             masters_content.append(last_master_content)
             last_master_content = "MASTER:"
 
-        last_master_content += "\n{0}".format(child['id'])
+        last_master_content += "\n{0}".format(child["id"])
 
     if len(last_master_content) > 8:
         masters_content.append(last_master_content)
@@ -48,7 +53,7 @@ def tree_decrypt_block(block, priv):
 
     contents = crypto.long_unpad(full_decrypt_block(block, priv))
     if contents[0:7] == "MASTER:":
-        return True, contents[7:].split('\n')[1:]
+        return True, contents[7:].split("\n")[1:]
     else:
         return False, contents
 
@@ -64,7 +69,7 @@ def tree_decrypt(block, priv, cached_blocks=None):
     blocks = [block]
 
     if isinstance(cached_blocks, list):
-        cb = dict([(b['id'], b) for b in cached_blocks])
+        cb = dict([(b["d"], b) for b in cached_blocks])
         cached_blocks = cb
     level = 0
 
@@ -105,16 +110,18 @@ def assemble_block_tree(contents, rsa_priv, receiver_pubkey):
 
     return blocks
 
+
 def divide_contents(contents):
     subcontents = []
     n = 0
     while n < len(contents):
-        m = min(len(contents), n + DATA_BLOCK_SIZE - crypto.bitsize_marker_length)
+        m = min(len(contents), n + DATA_BLOCK_SIZE - crypto.BITSIZE_MARKER_LENGTH)
         subcontent = contents[n:m]
         subcontent = crypto.long_pad(subcontent, DATA_BLOCK_SIZE)
         subcontents.append(subcontent)
-        n += DATA_BLOCK_SIZE - crypto.bitsize_marker_length
+        n += DATA_BLOCK_SIZE - crypto.BITSIZE_MARKER_LENGTH
     return subcontents
+
 
 def unite_contents(content_blocks):
     content = ""
@@ -126,18 +133,21 @@ def unite_contents(content_blocks):
 def compute_block_hash(block_dict):
     s = ""
     for k in sorted(block_dict.keys()):
-        if k in ['id']:
+        if k in ["id"]:
             continue
         s += "&{0}:{1}".format(k, block_dict[k])
     return hashlib.sha256(s).hexdigest()
 
+
 def decompose_metadata(metadata):
-    sender, receiver = [x.split(':')[-1] for x in metadata.split(';')]
+    sender, receiver = [x.split(":")[-1] for x in metadata.split(";")]
     return sender, receiver
+
 
 def recompose_metadata(sender, receiver):
     # TODO remove this
     return "sender_pubkey:{0};receiver_pubkey:{1}".format(sender, receiver)
+
 
 def encrypt_block(content, rsa_priv, receiver_pubkey):
     assert len(content) == DATA_BLOCK_SIZE
@@ -145,31 +155,33 @@ def encrypt_block(content, rsa_priv, receiver_pubkey):
         crypto.encrypt(content, rsa_priv, receiver_pubkey)
     sender, receiver = decompose_metadata(metadata)
     response = {
-                'aes_ciphertext': aes_ciphertext,
-                'encry_aes_key': encry_aes_key,
-                'hmac': hmac,
-                'hmac_signature': hmac_signature,
-                'iv': iv,
-                'sender_public_key': sender,
-                'receiver_public_key': receiver
+                "aes_ciphertext": aes_ciphertext,
+                "encry_aes_key": encry_aes_key,
+                "hmac": hmac,
+                "hmac_signature": hmac_signature,
+                "iv": iv,
+                "sender_public_key": sender,
+                "receiver_public_key": receiver
                 }
-    response['id'] = compute_block_hash(response)
+    response["id"] = compute_block_hash(response)
     return response
 
-def full_decrypt_block(response, receiver_privkey):
-    assert compute_block_hash(response) == response['id']
 
+def full_decrypt_block(response, receiver_privkey):
+    assert compute_block_hash(response) == response["id"]
 
     return crypto.decrypt(
-            response['aes_ciphertext'],
-            response['encry_aes_key'],
-            response['hmac'],
-            response['hmac_signature'],
+            response["aes_ciphertext"],
+            response["encry_aes_key"],
+            response["hmac"],
+            response["hmac_signature"],
             receiver_privkey,
-            response['iv'],
+            response["iv"],
             recompose_metadata(
-                response['sender_public_key'], response['receiver_public_key'])
-        )
+                response["sender_public_key"], response["receiver_public_key"]
+            )
+    )
+
 
 def aes_decrypt_block(response, aes_key):
     return
