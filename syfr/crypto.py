@@ -15,6 +15,7 @@ import loader
 
 bitsize_marker_length = 10
 
+
 def generate_rsa_key(complexity=4096):
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -23,6 +24,7 @@ def generate_rsa_key(complexity=4096):
      )
     return private_key
 
+
 def serialize_privkey(key, encrypted=False):
     return base64.b64encode(key.private_bytes(
         encoding=serialization.Encoding.DER,
@@ -30,20 +32,24 @@ def serialize_privkey(key, encrypted=False):
         encryption_algorithm=serialization.NoEncryption()
     ))
 
+
 def serialize_pubkey(pubkey):
     return base64.b64encode(pubkey.public_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     ))
 
+
 def load_pubkey(pubkey_text):
     return serialization.load_der_public_key(
         base64.b64decode(pubkey_text),
         backend=default_backend())
 
+
 def write_key(key, file_path='mykey.pem'):
     with open(file_path, 'w+') as fh:
         fh.write(key)
+
 
 def sign(message, key):
     signer = key.signer(
@@ -54,6 +60,7 @@ def sign(message, key):
         )
     signer.update(message)
     return base64.b64encode(signer.finalize())
+
 
 def verify_signature(signature, message, pubkey):
     verifier = pubkey.verifier(
@@ -72,6 +79,7 @@ def verify_signature(signature, message, pubkey):
         print "Invalid Signature"
         return False
 
+
 def rsa_encrypt(message, pubkey):
     ciphertext = pubkey.encrypt(
         message,
@@ -82,6 +90,7 @@ def rsa_encrypt(message, pubkey):
         )
     )
     return base64.b64encode(ciphertext)
+
 
 def rsa_decrypt(ciphertext, key):
     plaintext = key.decrypt(
@@ -94,8 +103,10 @@ def rsa_decrypt(ciphertext, key):
     )
     return plaintext
 
+
 def create_aes_key(complexity=32):
     return base64.b64encode(os.urandom(complexity))
+
 
 def create_hmac(key, message_list):
     h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
@@ -103,11 +114,13 @@ def create_hmac(key, message_list):
     h.update(message)
     return base64.b64encode(h.finalize())
 
+
 def pad(message, blocksize=128):
     padder = PKCS7(blocksize).padder()
     padded_data = padder.update(message)
     padded_data += padder.finalize()
     return padded_data
+
 
 def long_pad(message, goal_length=loader.DATA_BLOCK_SIZE):
     assert len(message) + bitsize_marker_length <= goal_length
@@ -119,15 +132,18 @@ def long_pad(message, goal_length=loader.DATA_BLOCK_SIZE):
     message += d
     return message
 
+
 def unpad(padded_data, blocksize=128):
     unpadder = PKCS7(blocksize).unpadder()
     data = unpadder.update(padded_data)
     return data + unpadder.finalize()
 
+
 def long_unpad(message):
     assert len(message) <= 10**bitsize_marker_length
     padding_size = int(message[-bitsize_marker_length:])
     return message[0:-bitsize_marker_length-padding_size]
+
 
 def aes_encrypt(message, key):
     iv = os.urandom(16)
@@ -141,6 +157,7 @@ def aes_encrypt(message, key):
     ciphertext = encryptor.update(message) + encryptor.finalize()
     return base64.b64encode(ciphertext), base64.b64encode(iv)
 
+
 def aes_decrypt(ciphertext, key, iv):
     cipher = Cipher(
             algorithms.AES(base64.b64decode(key)),
@@ -150,6 +167,7 @@ def aes_decrypt(ciphertext, key, iv):
     decryptor = cipher.decryptor()
     padded = decryptor.update(base64.b64decode(ciphertext)) + decryptor.finalize()
     return unpad(padded)
+
 
 def encrypt(message, rsa_priv, receiver_pubkey):
     aes_key = create_aes_key()
@@ -167,6 +185,7 @@ def encrypt(message, rsa_priv, receiver_pubkey):
     hmac_signature = sign(hmac, rsa_priv)
 
     return aes_ciphertext, encry_aes_key, hmac, hmac_signature, iv, metadata
+
 
 def decrypt(aes_ciphertext, encry_aes_key, hmac, hmac_signature, rsa_priv, iv, metadata):
     aes_key = rsa_decrypt(encry_aes_key, rsa_priv)
