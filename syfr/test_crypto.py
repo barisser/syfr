@@ -3,17 +3,20 @@ import os
 
 import crypto
 
+
 def test_rsa_encrypt_and_decrypt():
     priv = crypto.generate_rsa_key(complexity=512)
     message = "Attack at Calais"
     ciphertext = crypto.rsa_encrypt(message, priv.public_key())
     assert crypto.rsa_decrypt(ciphertext, priv) == message
 
+
 def test_aes_encrypt_decrypt():
     priv = crypto.create_aes_key()
     message = "Sell Watermelons"
     ciphertext, iv = crypto.aes_encrypt(message, priv)
     assert crypto.aes_decrypt(ciphertext, priv, iv) == message
+
 
 def test_full_encrypt():
     priv1 = crypto.generate_rsa_key()
@@ -34,11 +37,13 @@ def test_full_encrypt():
                 priv2, iv, metadata
             )
 
+
 def test_sign():
     priv = crypto.generate_rsa_key(complexity=512)
     message = "Secret wish list"
     sig = crypto.sign(message, priv)
     assert crypto.verify_signature(sig, message, priv.public_key())
+
 
 def test_long_pad():
     complexity = 10**3 # won't create exactly this length
