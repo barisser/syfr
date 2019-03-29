@@ -7,10 +7,12 @@ import crypto
 
 DATA_BLOCK_SIZE = 65536
 
+
 def encrypt_file(file_path, rsa_priv, receiver_pubkey):
     contents = open(file_path).read()
 
     return blocks
+
 
 def masters_from_children(children, rsa_priv, receiver_pubkey):
     contents = []
@@ -30,10 +32,12 @@ def masters_from_children(children, rsa_priv, receiver_pubkey):
     masters = [encrypt_block(crypto.long_pad(master_c), rsa_priv, receiver_pubkey) for master_c in masters_content]
     return masters
 
+
 def fetch_block(id):
     url = "https://syfr.io/data/v0/{0}".format(id)
     print "Fetching block {0} from {1}.".format(id, url)
     return requests.get(url).content
+
 
 def tree_decrypt_block(block, priv):
     """
@@ -105,6 +109,7 @@ def assemble_block_tree(contents, rsa_priv, receiver_pubkey):
 
     return blocks
 
+
 def divide_contents(contents):
     subcontents = []
     n = 0
@@ -116,12 +121,14 @@ def divide_contents(contents):
         n += DATA_BLOCK_SIZE - crypto.bitsize_marker_length
     return subcontents
 
+
 def unite_contents(content_blocks):
     content = ""
     for n, x in enumerate(content_blocks):
         content += crypto.long_unpad(x)
 
     return content
+
 
 def compute_block_hash(block_dict):
     s = ""
@@ -131,13 +138,16 @@ def compute_block_hash(block_dict):
         s += "&{0}:{1}".format(k, block_dict[k])
     return hashlib.sha256(s).hexdigest()
 
+
 def decompose_metadata(metadata):
     sender, receiver = [x.split(':')[-1] for x in metadata.split(';')]
     return sender, receiver
 
+
 def recompose_metadata(sender, receiver):
     # TODO remove this
     return "sender_pubkey:{0};receiver_pubkey:{1}".format(sender, receiver)
+
 
 def encrypt_block(content, rsa_priv, receiver_pubkey):
     assert len(content) == DATA_BLOCK_SIZE
@@ -156,6 +166,7 @@ def encrypt_block(content, rsa_priv, receiver_pubkey):
     response['id'] = compute_block_hash(response)
     return response
 
+
 def full_decrypt_block(response, receiver_privkey):
     assert compute_block_hash(response) == response['id']
 
@@ -170,6 +181,7 @@ def full_decrypt_block(response, receiver_privkey):
             recompose_metadata(
                 response['sender_public_key'], response['receiver_public_key'])
         )
+
 
 def aes_decrypt_block(response, aes_key):
     return
