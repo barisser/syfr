@@ -6,8 +6,10 @@ import os
 import crypto
 import loader
 
+
 def random_content(pseudolength):
     return base64.b64encode(os.urandom(pseudolength))
+
 
 def test_divide_unite_contents():
     # random contents
@@ -21,6 +23,7 @@ def test_divide_unite_contents():
     united = loader.unite_contents(subcontents)
     assert hashlib.sha256(united).hexdigest() == hashlib.sha256(contents).hexdigest()
 
+
 def test_encrypt_block():
     content = crypto.long_pad(random_content(1000))
     rsa_priv = crypto.generate_rsa_key()
@@ -29,6 +32,7 @@ def test_encrypt_block():
 
     response = loader.encrypt_block(content, rsa_priv, receiver_pubkey)
     assert loader.full_decrypt_block(response, priv2) == content
+
 
 def test_assemble_block_tree():
     contents = random_content(10**6)
