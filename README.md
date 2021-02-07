@@ -1,4 +1,7 @@
 # SYFR
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/734586ef873140c7bd8ea75b670520bd)](https://www.codacy.com/app/barisser/syfr?utm_source=github.com&utm_medium=referral&utm_content=barisser/syfr&utm_campaign=badger)
+
 Hybrid AES-RSA Encryption for Python
 
 ## What is Syfr?
